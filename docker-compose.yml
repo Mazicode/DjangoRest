@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 blogSite.wsgi:application
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/blogSite
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+    env_file:
+      - .env
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  test:
+    build: .
+    command: python manage.py test
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+    env_file:
+      - .env
+    volumes:
+      - .:/blogSite
+
+volumes:
+  postgres_data:
